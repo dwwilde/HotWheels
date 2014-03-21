@@ -21,6 +21,7 @@ LiquidTWI2 lcd(0);
 #define Buzzer 10
 #define ResetButton 4
 #define StartButton 8
+#define IR_Mosfet 6
 
 // define contstants
 #define A_Threshold 80
@@ -57,6 +58,7 @@ void setup() {
   pinMode(Track_B_Detector, INPUT);
   pinMode(ResetButton, INPUT);
   pinMode(StartButton, INPUT);
+  pinMode(IR_Mosfet, OUTPUT);
   pinMode(Buzzer,OUTPUT);
   Serial.begin(9600);
   // Show starting LED animation
@@ -64,7 +66,8 @@ void setup() {
   digitalWrite(Track_B_LED,HIGH);
   delay(2000);
   digitalWrite(Track_A_LED,LOW);
-  digitalWrite(Track_B_LED,LOW);    
+  digitalWrite(Track_B_LED,LOW);
+  digitalWrite(IR_Mosfet, LOW);
   WaitForStartingBlock();
   DisplayHeader();
 }
@@ -74,6 +77,7 @@ void loop()
 {
   if (digitalRead(StartButton))  //Check to see if starting block is up
   { 
+    digitalWrite(IR_Mosfet, HIGH);
     StartTime = millis();
     lcd.clear();
     lcd.setCursor(0, 0);
@@ -159,6 +163,7 @@ void loop()
         }
       }  // end else if (Winner == 2)
     }  //end while (RaceRunning) 
+    digitalWrite(IR_Mosfet, LOW);
     WaitForReset();
     WaitForStartingBlock();
     DisplayHeader();
