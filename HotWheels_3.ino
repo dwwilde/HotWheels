@@ -48,6 +48,8 @@ void setup() {
   lcd.setMCPType(LTI_TYPE_MCP23008); 
   // set up the LCD's number of rows and columns:
   lcd.begin(16, 2);
+  // Enter IR calibration test mode if the reset button is held down when
+  // the arduino is powered on.
   if (not digitalRead(ResetButton))
   {
     IR_Test();
