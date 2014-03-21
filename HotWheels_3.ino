@@ -48,9 +48,19 @@ void setup() {
   lcd.setMCPType(LTI_TYPE_MCP23008); 
   // set up the LCD's number of rows and columns:
   lcd.begin(16, 2);
+  if (not digitalRead(ResetButton))
+  {
+    IR_Test();
+  }
   // Print a message to the LCD.
-  lcd.print("HotWheel Timing Track");
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  //        "0123456789012345"
+  lcd.print("HotWheel Racing");
+  lcd.setCursor(0, 1);
+  lcd.print("David Wilde");
   lcd.setBacklight(HIGH);
+  Serial.print("Welcome to the HotWheels Racing Track by David Wilde!");
   // Set pinmodes
   pinMode(Track_A_LED,OUTPUT);
   pinMode(Track_B_LED,OUTPUT);
@@ -77,14 +87,17 @@ void loop()
 {
   if (digitalRead(StartButton))  //Check to see if starting block is up
   { 
-    digitalWrite(IR_Mosfet, HIGH);
     StartTime = millis();
+    digitalWrite(IR_Mosfet, HIGH);
     lcd.clear();
     lcd.setCursor(0, 0);
     //        "0123456789012345"
     lcd.print("  Race Running  ");
     lcd.setCursor(0, 1);
     lcd.print("                ");
+    Serial.println("");
+    Serial.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+    Serial.println("The race started!");
     Winner = 0;
     Tripped = '0';
     RaceRunning = true;
@@ -103,6 +116,7 @@ void loop()
         lcd.print("   Timeout!     ");
         lcd.setCursor(0, 1);
         lcd.print("  Press Reset   ");
+        Serial.println("Timeout exceeded.  Race Aborted!");
       }
       if (not digitalRead(ResetButton))
       {
@@ -164,6 +178,8 @@ void loop()
       }  // end else if (Winner == 2)
     }  //end while (RaceRunning) 
     digitalWrite(IR_Mosfet, LOW);
+    Serial.println("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=");
+    Serial.println("");
     WaitForReset();
     WaitForStartingBlock();
     DisplayHeader();
@@ -177,13 +193,16 @@ void FinishLights(int Winner)
   {
   case 1:
     digitalWrite(Track_A_LED,HIGH);
+    Serial.println("Car on track A wins!");
     break;
   case 2:
     digitalWrite(Track_B_LED,HIGH);
+    Serial.println("Car on track B wins!");
     break;
   case 3:
     digitalWrite(Track_A_LED,HIGH);
     digitalWrite(Track_B_LED,HIGH);
+    Serial.println("The race was a tie!!!!");
     break;
   }    
 }
@@ -236,6 +255,7 @@ void DisplayHeader()
   lcd.setCursor(0, 0);
   //         0123456789012345
   lcd.print(" Ready to Race! ");
+  Serial.println("Ready to Race!");
 }
 
 void PrintResultsA()
@@ -246,7 +266,9 @@ void PrintResultsA()
   lcd.print("Time A: ");
   timestrA = dtostrf(ElapsedA/1000.00,6,3,bufferA); 
   lcd.print(timestrA);
-  //Serial.println(timestrA);
+  Serial.print("Track A time: ");
+  Serial.print(timestrA);
+  Serial.println(" seconds.");
 }
 
 void PrintResultsB()
@@ -257,7 +279,9 @@ void PrintResultsB()
   lcd.print("Time B: ");
   timestrB = dtostrf(ElapsedB/1000.00,6,3,bufferB); 
   lcd.print(timestrB);
-  //Serial.println(timestrB);
+  Serial.print("Track B time: ");
+  Serial.print(timestrB);
+  Serial.println(" seconds.");
 }
 
 void WaitForReset()
@@ -285,6 +309,7 @@ void WaitForStartingBlock()
     lcd.print(" Please Replace ");
     lcd.setCursor(0, 1);
     lcd.print(" Starting Block ");
+    Serial.println("Please replace the starting block.");
     while (digitalRead(StartButton))
     {
       delay(100);    
@@ -294,4 +319,27 @@ void WaitForStartingBlock()
   }
 }
 
-
+void IR_Test()
+{
+  int IR_val_B;
+  int IR_val_A;
+  digitalWrite(IR_Mosfet, HIGH);
+  while(true)
+  {
+    IR_val_A = analogRead(Track_A_Detector);
+    IR_val_B = analogRead(Track_B_Detector);
+    lcd.clear();
+    lcd.setCursor(0, 0);
+    lcd.print("TrackA:  ");
+    lcd.print(IR_val_A);
+    lcd.setCursor(0, 1);
+    lcd.print("TrackB:  ");
+    lcd.print(IR_val_B);
+    Serial.print("Track A value: ");
+    Serial.print(IR_val_A);
+    Serial.print("\t");
+    Serial.print("Track B value: ");
+    Serial.println(IR_val_B);
+    delay(100);
+  }
+}
