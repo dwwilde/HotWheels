@@ -48,22 +48,9 @@ void setup() {
   lcd.setMCPType(LTI_TYPE_MCP23008); 
   // set up the LCD's number of rows and columns:
   lcd.begin(16, 2);
-  // Enter IR calibration test mode if the reset button is held down when
-  // the arduino is powered on.
-  if (not digitalRead(ResetButton))
-  {
-    IR_Test();
-  }
-  // Print a message to the LCD.
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  //        "0123456789012345"
-  lcd.print("HotWheel Racing");
-  lcd.setCursor(0, 1);
-  lcd.print("David Wilde");
-  lcd.setBacklight(HIGH);
-  Serial.print("Welcome to the HotWheels Racing Track by David Wilde!");
-  // Set pinmodes
+  //Serial.begin(9600);
+  Serial.begin(57600);
+    // Set pinmodes
   pinMode(Track_A_LED,OUTPUT);
   pinMode(Track_B_LED,OUTPUT);
   pinMode(Track_A_Detector, INPUT);
@@ -72,7 +59,32 @@ void setup() {
   pinMode(StartButton, INPUT);
   pinMode(IR_Mosfet, OUTPUT);
   pinMode(Buzzer,OUTPUT);
-  Serial.begin(9600);
+  // Enter IR calibration test mode if the reset button is held down when
+  // the arduino is powered on.
+  if (not digitalRead(ResetButton))
+  {
+    lcd.clear();
+    lcd.setCursor(0,0);
+  //         "0123456789012345"
+    lcd.print("IR Sensor Test");
+    lcd.setCursor(0,1);
+  //         "0123456789012345"
+    lcd.print("Release Button");
+    while (not digitalRead(ResetButton))
+    {
+      delay(100);
+    }
+    IR_Test();
+  }
+  // Print a message to the LCD.
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  //        "0123456789012345"
+  lcd.print("HotWheel Racing");
+  lcd.setCursor(0, 1);
+  lcd.print("By: David Wilde");
+  lcd.setBacklight(HIGH);
+  Serial.println("Welcome to the HotWheels Racing Track by David Wilde!");
   // Show starting LED animation
   digitalWrite(Track_A_LED,HIGH);
   digitalWrite(Track_B_LED,HIGH);
@@ -124,6 +136,7 @@ void loop()
       {
         //Reset button used to abort the race
         RaceRunning=false;
+        Serial.println("Reset Buton Pressed - Race Aborted!");
       }
       if ((Winner == 0) && RaceRunning)
       {
@@ -326,10 +339,26 @@ void IR_Test()
   int IR_val_B;
   int IR_val_A;
   digitalWrite(IR_Mosfet, HIGH);
-  while(true)
+  while (digitalRead(ResetButton))
   {
     IR_val_A = analogRead(Track_A_Detector);
     IR_val_B = analogRead(Track_B_Detector);
+    if ( IR_val_A < A_Threshold )
+    {
+      digitalWrite(Track_A_LED,HIGH);   
+    }
+    else
+    {
+      digitalWrite(Track_A_LED,LOW);   
+    }
+    if ( IR_val_B < B_Threshold )
+    {
+      digitalWrite(Track_B_LED,HIGH);
+    }
+    else
+    {
+      digitalWrite(Track_B_LED,LOW);   
+    }
     lcd.clear();
     lcd.setCursor(0, 0);
     lcd.print("TrackA:  ");
@@ -344,4 +373,5 @@ void IR_Test()
     Serial.println(IR_val_B);
     delay(100);
   }
+  digitalWrite(IR_Mosfet, LOW);
 }
